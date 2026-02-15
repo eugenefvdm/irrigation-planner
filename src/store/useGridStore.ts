@@ -62,7 +62,7 @@ export const useGridStore = create<GridStore>((set, get) => ({
   grid: {},
   history: [{}],
   historyIndex: 0,
-  zoom: 1,
+  zoom: 0.75,
   selectedCatalogId: null,
   selectedCell: null,
   catalog: COMPONENT_CATALOG,

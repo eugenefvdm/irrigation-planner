@@ -38,8 +38,13 @@ export function GridCanvas() {
     const scaleY = HEIGHT / rect.height;
     const gx = Math.floor(((e.clientX - rect.left) * scaleX) / CELL_SIZE);
     const gy = Math.floor(((e.clientY - rect.top) * scaleY) / CELL_SIZE);
-    if (gx >= 0 && gx < GRID_WIDTH && gy >= 0 && gy < GRID_HEIGHT && !grid[`${gx},${gy}`]) {
-      setSelectedCell(null, null);
+    if (gx >= 0 && gx < GRID_WIDTH && gy >= 0 && gy < GRID_HEIGHT) {
+      const key = `${gx},${gy}`;
+      if (grid[key]) {
+        setSelectedCell(gx, gy);
+      } else {
+        setSelectedCell(null, null);
+      }
     }
   };
 
@@ -75,6 +80,7 @@ export function GridCanvas() {
             onClick={() => handleCellClick(x, y)}
             className="cursor-pointer"
           >
+            <title>{component.name}</title>
             {selected && (
               <rect
                 x={1}

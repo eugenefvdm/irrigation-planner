@@ -108,6 +108,18 @@ export const COMPONENT_CATALOG: PipeComponent[] = [
     ports: [{ id: "p1", type: "barb", direction: "south" }],
   },
   {
+    id: "drip_emitter_4lph",
+    name: "Drip Emitter (4 L/h)",
+    category: "emitter",
+    ports: [{ id: "p1", type: "barb", direction: "south" }],
+  },
+  {
+    id: "drip_emitter_8lph",
+    name: "Drip Emitter (8 L/h)",
+    category: "emitter",
+    ports: [{ id: "p1", type: "barb", direction: "south" }],
+  },
+  {
     id: "tap",
     name: "Tap",
     category: "connector",

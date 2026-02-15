@@ -1,8 +1,25 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import { useGridStore } from "@/store/useGridStore";
 import { getSeedGrid } from "@/data/seedSystem";
 import { ComponentSymbol } from "./ComponentSymbol";
+
+function useToast() {
+  const [message, setMessage] = useState<string | null>(null);
+
+  const show = useCallback((msg: string) => {
+    setMessage(msg);
+  }, []);
+
+  useEffect(() => {
+    if (!message) return;
+    const id = setTimeout(() => setMessage(null), 2000);
+    return () => clearTimeout(id);
+  }, [message]);
+
+  return { message, show };
+}
 
 const TOOLBAR_ICON_SIZE = 32;
 
@@ -39,6 +56,7 @@ function RedoIcon({ className }: { className?: string }) {
 }
 
 export function Toolbar() {
+  const toast = useToast();
   const catalog = useGridStore((s) => s.catalog);
   const selectedCatalogId = useGridStore((s) => s.selectedCatalogId);
   const setSelectedCatalog = useGridStore((s) => s.setSelectedCatalog);
@@ -80,15 +98,28 @@ export function Toolbar() {
   const handleSave = () => {
     const json = exportJson();
     localStorage.setItem(STORAGE_KEY, json);
+    toast.show("Saved");
   };
 
   const handleLoad = () => {
     const json = localStorage.getItem(STORAGE_KEY);
-    if (json) loadFromJson(json);
+    if (json) {
+      loadFromJson(json);
+      toast.show("Loaded");
+    }
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-4 p-4 bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700">
+    <>
+      {toast.message && (
+        <div
+          role="status"
+          className="fixed bottom-4 right-4 z-50 px-4 py-2 rounded-md shadow-lg border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700 text-stone-800 dark:text-stone-200 text-sm font-medium transition-opacity duration-200"
+        >
+          {toast.message}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-4 p-4 bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700">
       <div className="flex items-center gap-1">
         <button type="button" title="Zoom out" onClick={zoomOut} className={btnClass}>
           <ZoomOutIcon className="size-5" />
@@ -176,5 +207,6 @@ export function Toolbar() {
         Export JSON
       </button>
     </div>
+    </>
   );
 }

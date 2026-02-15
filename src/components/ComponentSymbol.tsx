@@ -57,30 +57,28 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
       );
     }
     case "elbow_90": {
-      const r = (12 / 50) * S;
       const end = S - margin;
       return (
         <g transform={transform}>
           <path
-            d={`M ${HALF + r} ${HALF} L ${end} ${HALF} L ${end} ${end} L ${HALF} ${end}`}
+            d={`M ${end} ${HALF} L ${HALF} ${HALF} L ${HALF} ${end}`}
             fill="none"
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <circle cx={HALF + r} cy={HALF} r={rSmall} fill="currentColor" className={PORT_DOT_CLASS} />
+          <circle cx={end} cy={HALF} r={rSmall} fill="currentColor" className={PORT_DOT_CLASS} />
           <circle cx={HALF} cy={end} r={rSmall} fill="currentColor" className={PORT_DOT_CLASS} />
         </g>
       );
     }
     case "elbow_90_sw": {
-      const r = (12 / 50) * S;
       const end = S - margin;
       return (
         <g transform={transform}>
           <path
-            d={`M ${HALF} ${end} L ${HALF} ${margin} L ${margin} ${margin} L ${margin} ${HALF}`}
+            d={`M ${HALF} ${end} L ${HALF} ${HALF} L ${margin} ${HALF}`}
             fill="none"
             stroke={stroke}
             strokeWidth={strokeWidth}
@@ -93,12 +91,11 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
       );
     }
     case "elbow_90_wn": {
-      const r = (12 / 50) * S;
       const end = S - margin;
       return (
         <g transform={transform}>
           <path
-            d={`M ${margin} ${HALF} L ${end - r} ${HALF} L ${end - r} ${margin} L ${HALF} ${margin}`}
+            d={`M ${margin} ${HALF} L ${HALF} ${HALF} L ${HALF} ${margin}`}
             fill="none"
             stroke={stroke}
             strokeWidth={strokeWidth}
@@ -111,12 +108,11 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
       );
     }
     case "elbow_90_ne": {
-      const r = (12 / 50) * S;
       const end = S - margin;
       return (
         <g transform={transform}>
           <path
-            d={`M ${HALF} ${margin} L ${HALF} ${end} L ${end} ${end} L ${end} ${HALF + r}`}
+            d={`M ${HALF} ${margin} L ${HALF} ${HALF} L ${end} ${HALF}`}
             fill="none"
             stroke={stroke}
             strokeWidth={strokeWidth}
@@ -124,7 +120,7 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
             strokeLinejoin="round"
           />
           <circle cx={HALF} cy={margin} r={rSmall} fill="currentColor" className={PORT_DOT_CLASS} />
-          <circle cx={end} cy={HALF + r} r={rSmall} fill="currentColor" className={PORT_DOT_CLASS} />
+          <circle cx={end} cy={HALF} r={rSmall} fill="currentColor" className={PORT_DOT_CLASS} />
         </g>
       );
     }
@@ -237,16 +233,23 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
         </g>
       );
     }
-    case "drip_emitter_2lph": {
-      const lineTop = (10 / 50) * S;
-      const lineBottom = S - margin;
-      const circleR = (5 / 50) * S;
+    case "drip_emitter_2lph":
+    case "drip_emitter_4lph":
+    case "drip_emitter_8lph": {
       const textSize = Math.max(6, (9 / 50) * S);
+      const textY = margin + textSize / 2 + (2 / 50) * S;
+      const gap = (3 / 50) * S;
+      const circleR = (5 / 50) * S;
+      const circleY = textY + textSize / 2 + gap + circleR;
+      const lineBottom = S - margin;
+      const lineStartY = circleY + circleR;
+      const dripLabel =
+        component.id === "drip_emitter_2lph" ? "2 L/h" : component.id === "drip_emitter_4lph" ? "4 L/h" : "8 L/h";
       return (
         <g transform={transform}>
           <line
             x1={HALF}
-            y1={lineTop}
+            y1={lineStartY}
             x2={HALF}
             y2={lineBottom}
             stroke={stroke}
@@ -255,24 +258,24 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
           />
           <circle
             cx={HALF}
-            cy={lineTop}
+            cy={circleY}
             r={circleR}
             fill="none"
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
+          <circle cx={HALF} cy={lineBottom} r={rSmall} fill="currentColor" className="text-emerald-800 dark:text-emerald-200" />
           <text
             x={HALF}
-            y={lineTop + 1}
+            y={textY}
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize={textSize}
             fill="currentColor"
             className="text-emerald-800 dark:text-emerald-200 font-medium"
           >
-            2 L/h
+            {dripLabel}
           </text>
-          <circle cx={HALF} cy={lineBottom} r={rSmall} fill="currentColor" className="text-emerald-800 dark:text-emerald-200" />
         </g>
       );
     }
@@ -280,7 +283,7 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
       const spoutW = (4 / 50) * S;
       const spoutH = (14 / 50) * S;
       const wheelR = (6 / 50) * S;
-      const baseY = HALF + 2;
+      const baseY = HALF;
       const spoutX = HALF - spoutW / 2;
       const spoutTop = baseY - spoutH;
       return (
