@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useGridStore } from "@/store/useGridStore";
+import { useThemeStore, type Theme } from "@/store/useThemeStore";
 import { getSeedGrid } from "@/data/seedSystem";
 import { ComponentSymbol } from "./ComponentSymbol";
 
@@ -55,8 +56,40 @@ function RedoIcon({ className }: { className?: string }) {
   );
 }
 
+function SunIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+    </svg>
+  );
+}
+
+function MoonIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+    </svg>
+  );
+}
+
+function ComputerIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+    </svg>
+  );
+}
+
+const THEME_OPTIONS: { value: Theme; label: string }[] = [
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+  { value: "system", label: "System" },
+];
+
 export function Toolbar() {
   const toast = useToast();
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
   const catalog = useGridStore((s) => s.catalog);
   const selectedCatalogId = useGridStore((s) => s.selectedCatalogId);
   const setSelectedCatalog = useGridStore((s) => s.setSelectedCatalog);
@@ -242,6 +275,7 @@ export function Toolbar() {
           <button
             type="button"
             onClick={() => rotateSelection()}
+            title="Rotate selection 90°"
             className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
           >
             Rotate
@@ -249,6 +283,7 @@ export function Toolbar() {
           <button
             type="button"
             onClick={() => removeSelection()}
+            title="Remove selection"
             className="px-3 py-1.5 rounded text-sm border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-700 dark:text-red-300"
           >
             Remove
@@ -256,6 +291,26 @@ export function Toolbar() {
         </>
       )}
       <span className="flex-1" />
+      <div className="relative flex items-center justify-center rounded border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 w-9 h-9">
+        <span className="pointer-events-none text-stone-500 dark:text-stone-400" aria-hidden>
+          {theme === "light" && <SunIcon className="size-5" />}
+          {theme === "dark" && <MoonIcon className="size-5" />}
+          {theme === "system" && <ComputerIcon className="size-5" />}
+        </span>
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value as Theme)}
+          className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+          title="Theme: Light, Dark, or System"
+          aria-label="Theme"
+        >
+          {THEME_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
       <input
         ref={fileInputRef}
         type="file"
@@ -266,6 +321,7 @@ export function Toolbar() {
       <button
         type="button"
         onClick={handleSave}
+        title="Save to browser storage (Ctrl+S)"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Save
@@ -273,6 +329,7 @@ export function Toolbar() {
       <button
         type="button"
         onClick={handleSaveAs}
+        title="Download plan as JSON file"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Save As
@@ -280,6 +337,7 @@ export function Toolbar() {
       <button
         type="button"
         onClick={handleLoad}
+        title="Load from browser storage"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Load
@@ -287,6 +345,7 @@ export function Toolbar() {
       <button
         type="button"
         onClick={handleImportClick}
+        title="Load plan from JSON file"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Import
@@ -294,6 +353,7 @@ export function Toolbar() {
       <button
         type="button"
         onClick={handleLoadExample}
+        title="Load example irrigation plan"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Load example
