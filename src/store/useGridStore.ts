@@ -29,7 +29,7 @@ interface GridStore {
   zoom: number;
   selectedCatalogId: string | null;
   selectedCells: SelectionCell[];
-  place: (componentId: string, x: number, y: number, rotation?: Rotation) => void;
+  place: (componentId: string, x: number, y: number, rotation?: Rotation, text?: string) => void;
   remove: (x: number, y: number) => void;
   rotate: (x: number, y: number) => void;
   undo: () => void;
@@ -70,9 +70,9 @@ export const useGridStore = create<GridStore>((set, get) => ({
   selectedCells: [],
   catalog: COMPONENT_CATALOG,
 
-  place(componentId, x, y, rotation = 0) {
+  place(componentId, x, y, rotation = 0, text) {
     const grid = get().grid;
-    const nextGrid = enginePlace(grid, componentId, x, y, rotation);
+    const nextGrid = enginePlace(grid, componentId, x, y, rotation, text);
     const { history, historyIndex } = pushHistory(get, nextGrid);
     set({ grid: nextGrid, history, historyIndex });
   },

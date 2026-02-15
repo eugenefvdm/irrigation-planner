@@ -96,12 +96,6 @@ export const COMPONENT_CATALOG: PipeComponent[] = [
     ],
   },
   {
-    id: "male_adapter",
-    name: "Male Adapter",
-    category: "connector",
-    ports: [{ id: "p1", type: "male_thread", direction: "east" }],
-  },
-  {
     id: "drip_emitter_2lph",
     name: "Drip Emitter (2 L/h)",
     category: "emitter",
@@ -124,6 +118,12 @@ export const COMPONENT_CATALOG: PipeComponent[] = [
     name: "Tap",
     category: "connector",
     ports: [{ id: "p1", type: "female_thread", direction: "east" }],
+  },
+  {
+    id: "label",
+    name: "Text label",
+    category: "connector",
+    ports: [],
   },
 ];
 

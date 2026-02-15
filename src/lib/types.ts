@@ -21,6 +21,7 @@ export interface PlacedComponent {
   x: number;
   y: number;
   rotation: Rotation;
+  text?: string;
 }
 
 export type GridState = Record<string, PlacedComponent>;

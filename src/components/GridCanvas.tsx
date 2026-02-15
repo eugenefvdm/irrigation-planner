@@ -53,7 +53,13 @@ export function GridCanvas() {
       return;
     }
     if (selectedCatalogId) {
-      place(selectedCatalogId, gx, gy, 0);
+      if (selectedCatalogId === "label") {
+        const text = window.prompt("Enter text", "");
+        if (text === null) return;
+        place(selectedCatalogId, gx, gy, 0, text ?? "");
+      } else {
+        place(selectedCatalogId, gx, gy, 0);
+      }
     } else {
       setSelectedCells([]);
     }
@@ -190,7 +196,7 @@ export function GridCanvas() {
                 strokeWidth={2}
               />
             )}
-            <ComponentSymbol component={component} rotation={placed.rotation} selected={selected} />
+            <ComponentSymbol component={component} rotation={placed.rotation} selected={selected} text={placed.text} />
           </g>
         );
       })}

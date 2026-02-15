@@ -98,7 +98,6 @@ export function Toolbar() {
   const removeSelection = useGridStore((s) => s.removeSelection);
   const moveSelection = useGridStore((s) => s.moveSelection);
   const exportJson = useGridStore((s) => s.exportJson);
-  const loadFromJson = useGridStore((s) => s.loadFromJson);
   const zoom = useGridStore((s) => s.zoom);
   const zoomIn = useGridStore((s) => s.zoomIn);
   const zoomOut = useGridStore((s) => s.zoomOut);
@@ -152,6 +151,7 @@ export function Toolbar() {
     }
   };
 
+  const loadFromJson = useGridStore((s) => s.loadFromJson);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImportClick = () => {

@@ -10,9 +10,10 @@ interface ComponentSymbolProps {
   rotation?: 0 | 90 | 180 | 270;
   selected?: boolean;
   size?: number;
+  text?: string;
 }
 
-export function ComponentSymbol({ component, rotation = 0, selected, size = CELL_SIZE }: ComponentSymbolProps) {
+export function ComponentSymbol({ component, rotation = 0, selected, size = CELL_SIZE, text }: ComponentSymbolProps) {
   const S = size;
   const HALF = S / 2;
   const transform = `rotate(${rotation} ${HALF} ${HALF})`;
@@ -188,51 +189,6 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
         </g>
       );
     }
-    case "male_adapter": {
-      const bodyW = (6 / 50) * S;
-      const bodyH = (18 / 50) * S;
-      const top = margin + 2;
-      const left = HALF - bodyW / 2;
-      const threadY0 = top + 4;
-      const threadY1 = top + bodyH - 4;
-      const threadStep = (threadY1 - threadY0) / 5;
-      const baseY = top + bodyH;
-      return (
-        <g transform={transform}>
-          <rect
-            x={left}
-            y={top}
-            width={bodyW}
-            height={bodyH}
-            rx={bodyW / 2}
-            fill="none"
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-          />
-          {[0, 1, 2, 3, 4].map((i) => (
-            <line
-              key={i}
-              x1={left - 1}
-              y1={threadY0 + i * threadStep}
-              x2={left + bodyW + 1}
-              y2={threadY0 + i * threadStep}
-              stroke={stroke}
-              strokeWidth={strokeWidth * 0.6}
-            />
-          ))}
-          <line
-            x1={HALF}
-            y1={baseY}
-            x2={S - margin}
-            y2={baseY}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-          />
-          <circle cx={S - margin} cy={baseY} r={rSmall} fill="currentColor" className="text-amber-800 dark:text-amber-200" />
-        </g>
-      );
-    }
     case "drip_emitter_2lph":
     case "drip_emitter_4lph":
     case "drip_emitter_8lph": {
@@ -312,6 +268,24 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
             strokeLinecap="round"
           />
           <circle cx={S - margin} cy={baseY} r={rSmall} fill="currentColor" className={PORT_DOT_CLASS} />
+        </g>
+      );
+    }
+    case "label": {
+      const fontSize = Math.max(8, (S * 12) / 50);
+      return (
+        <g transform={transform}>
+          <text
+            x={HALF}
+            y={HALF}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={fontSize}
+            fill="currentColor"
+            className="text-stone-700 dark:text-stone-300 font-medium"
+          >
+            {text ?? "Text"}
+          </text>
         </g>
       );
     }

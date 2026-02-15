@@ -30,6 +30,7 @@ export function importGridFromJson(json: string): GridState {
         x: p.x,
         y: p.y,
         rotation: p.rotation as 0 | 90 | 180 | 270,
+        ...(typeof p.text === "string" && { text: p.text }),
       };
     }
   }

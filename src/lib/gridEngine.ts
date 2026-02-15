@@ -63,7 +63,8 @@ export function placeComponent(
   componentId: string,
   x: number,
   y: number,
-  rotation: Rotation = 0
+  rotation: Rotation = 0,
+  text?: string
 ): GridState {
   if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return grid;
   const key = cellKey(x, y);
@@ -71,7 +72,13 @@ export function placeComponent(
   const component = getComponentById(componentId);
   if (!component) return grid;
   const next = { ...grid };
-  next[key] = { componentId, x, y, rotation };
+  next[key] = {
+    componentId,
+    x,
+    y,
+    rotation,
+    ...(text !== undefined && { text }),
+  };
   return next;
 }
 
