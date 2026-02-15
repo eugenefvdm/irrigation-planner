@@ -6,15 +6,16 @@ import { CELL_SIZE } from "@/lib/constants";
 const HALF = CELL_SIZE / 2;
 
 export function ConnectionHighlights() {
-  const selectedCell = useGridStore((s) => s.selectedCell);
+  const selectedCells = useGridStore((s) => s.selectedCells);
   const getValidTargets = useGridStore((s) => s.getValidTargets);
   const grid = useGridStore((s) => s.grid);
 
-  if (!selectedCell) return null;
-  const key = `${selectedCell.x},${selectedCell.y}`;
+  if (selectedCells.length !== 1) return null;
+  const cell = selectedCells[0];
+  const key = `${cell.x},${cell.y}`;
   if (!grid[key]) return null;
 
-  const targets = getValidTargets(selectedCell.x, selectedCell.y);
+  const targets = getValidTargets(cell.x, cell.y);
 
   return (
     <g className="pointer-events-none">

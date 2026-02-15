@@ -95,6 +95,51 @@ export function rotateComponent(grid: GridState, x: number, y: number): GridStat
   return next;
 }
 
+const cellKeysSet = (cells: { x: number; y: number }[]) =>
+  new Set(cells.map((c) => cellKey(c.x, c.y)));
+
+export function moveComponents(
+  grid: GridState,
+  cells: { x: number; y: number }[],
+  dx: number,
+  dy: number
+): GridState {
+  if (cells.length === 0) return grid;
+  const movingKeys = cellKeysSet(cells);
+  const next = { ...grid };
+  for (const c of cells) {
+    delete next[cellKey(c.x, c.y)];
+  }
+  for (const c of cells) {
+    const nx = c.x + dx;
+    const ny = c.y + dy;
+    if (nx < 0 || nx >= GRID_WIDTH || ny < 0 || ny >= GRID_HEIGHT) return grid;
+    const newKey = cellKey(nx, ny);
+    if (next[newKey] !== undefined) return grid;
+    const placed = grid[cellKey(c.x, c.y)];
+    if (!placed) return grid;
+    next[newKey] = { ...placed, x: nx, y: ny };
+  }
+  return next;
+}
+
+export function removeComponents(grid: GridState, cells: { x: number; y: number }[]): GridState {
+  if (cells.length === 0) return grid;
+  const next = { ...grid };
+  for (const c of cells) {
+    delete next[cellKey(c.x, c.y)];
+  }
+  return next;
+}
+
+export function rotateComponents(grid: GridState, cells: { x: number; y: number }[]): GridState {
+  let next = grid;
+  for (const c of cells) {
+    next = rotateComponent(next, c.x, c.y);
+  }
+  return next;
+}
+
 export function getConnections(grid: GridState): Connection[] {
   const connections: Connection[] = [];
   const added = new Set<string>();

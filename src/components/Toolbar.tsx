@@ -60,10 +60,10 @@ export function Toolbar() {
   const catalog = useGridStore((s) => s.catalog);
   const selectedCatalogId = useGridStore((s) => s.selectedCatalogId);
   const setSelectedCatalog = useGridStore((s) => s.setSelectedCatalog);
-  const selectedCell = useGridStore((s) => s.selectedCell);
-  const setSelectedCell = useGridStore((s) => s.setSelectedCell);
-  const rotate = useGridStore((s) => s.rotate);
-  const remove = useGridStore((s) => s.remove);
+  const selectedCells = useGridStore((s) => s.selectedCells);
+  const rotateSelection = useGridStore((s) => s.rotateSelection);
+  const removeSelection = useGridStore((s) => s.removeSelection);
+  const moveSelection = useGridStore((s) => s.moveSelection);
   const exportJson = useGridStore((s) => s.exportJson);
   const loadFromJson = useGridStore((s) => s.loadFromJson);
   const zoom = useGridStore((s) => s.zoom);
@@ -205,18 +205,50 @@ export function Toolbar() {
         </button>
       ))}
       <span className="w-px h-6 bg-stone-300 dark:bg-stone-600" />
-      {selectedCell && (
+      {selectedCells.length > 0 && (
         <>
           <button
             type="button"
-            onClick={() => rotate(selectedCell.x, selectedCell.y)}
+            onClick={() => moveSelection(-1, 0)}
+            className="px-2 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+            title="Move left"
+          >
+            Left
+          </button>
+          <button
+            type="button"
+            onClick={() => moveSelection(1, 0)}
+            className="px-2 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+            title="Move right"
+          >
+            Right
+          </button>
+          <button
+            type="button"
+            onClick={() => moveSelection(0, -1)}
+            className="px-2 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+            title="Move up"
+          >
+            Up
+          </button>
+          <button
+            type="button"
+            onClick={() => moveSelection(0, 1)}
+            className="px-2 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+            title="Move down"
+          >
+            Down
+          </button>
+          <button
+            type="button"
+            onClick={() => rotateSelection()}
             className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
           >
             Rotate
           </button>
           <button
             type="button"
-            onClick={() => remove(selectedCell.x, selectedCell.y)}
+            onClick={() => removeSelection()}
             className="px-3 py-1.5 rounded text-sm border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-700 dark:text-red-300"
           >
             Remove

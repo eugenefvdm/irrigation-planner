@@ -4,6 +4,9 @@ import {
   placeComponent as enginePlace,
   removeComponent as engineRemove,
   rotateComponent as engineRotate,
+  moveComponents as engineMoveComponents,
+  removeComponents as engineRemoveComponents,
+  rotateComponents as engineRotateComponents,
   getConnections,
   getValidConnectionTargets,
 } from "@/lib/gridEngine";
@@ -12,10 +15,7 @@ import { exportGridToJson, importGridFromJson } from "@/lib/export";
 
 type Rotation = 0 | 90 | 180 | 270;
 
-interface Selection {
-  x: number;
-  y: number;
-}
+export type SelectionCell = { x: number; y: number };
 
 const MAX_HISTORY = 50;
 const ZOOM_MIN = 0.5;
@@ -28,7 +28,7 @@ interface GridStore {
   historyIndex: number;
   zoom: number;
   selectedCatalogId: string | null;
-  selectedCell: Selection | null;
+  selectedCells: SelectionCell[];
   place: (componentId: string, x: number, y: number, rotation?: Rotation) => void;
   remove: (x: number, y: number) => void;
   rotate: (x: number, y: number) => void;
@@ -37,7 +37,10 @@ interface GridStore {
   zoomIn: () => void;
   zoomOut: () => void;
   setSelectedCatalog: (id: string | null) => void;
-  setSelectedCell: (x: number | null, y: number | null) => void;
+  setSelectedCells: (cells: SelectionCell[]) => void;
+  moveSelection: (dx: number, dy: number) => void;
+  removeSelection: () => void;
+  rotateSelection: () => void;
   getConnections: () => ReturnType<typeof getConnections>;
   getValidTargets: (x: number, y: number, portId?: string) => ReturnType<typeof getValidConnectionTargets>;
   loadGrid: (grid: GridState) => void;
@@ -64,7 +67,7 @@ export const useGridStore = create<GridStore>((set, get) => ({
   historyIndex: 0,
   zoom: 0.75,
   selectedCatalogId: null,
-  selectedCell: null,
+  selectedCells: [],
   catalog: COMPONENT_CATALOG,
 
   place(componentId, x, y, rotation = 0) {
@@ -78,7 +81,7 @@ export const useGridStore = create<GridStore>((set, get) => ({
     const grid = get().grid;
     const nextGrid = engineRemove(grid, x, y);
     const { history, historyIndex } = pushHistory(get, nextGrid);
-    set({ grid: nextGrid, history, historyIndex, selectedCell: null });
+    set({ grid: nextGrid, history, historyIndex, selectedCells: [] });
   },
 
   rotate(x, y) {
@@ -92,14 +95,14 @@ export const useGridStore = create<GridStore>((set, get) => ({
     const { history, historyIndex } = get();
     if (historyIndex <= 0) return;
     const nextIndex = historyIndex - 1;
-    set({ grid: history[nextIndex], historyIndex: nextIndex, selectedCell: null });
+    set({ grid: history[nextIndex], historyIndex: nextIndex, selectedCells: [] });
   },
 
   redo() {
     const { history, historyIndex } = get();
     if (historyIndex >= history.length - 1) return;
     const nextIndex = historyIndex + 1;
-    set({ grid: history[nextIndex], historyIndex: nextIndex, selectedCell: null });
+    set({ grid: history[nextIndex], historyIndex: nextIndex, selectedCells: [] });
   },
 
   zoomIn() {
@@ -114,9 +117,34 @@ export const useGridStore = create<GridStore>((set, get) => ({
     set({ selectedCatalogId: id });
   },
 
-  setSelectedCell(x, y) {
-    if (x === null || y === null) set({ selectedCell: null });
-    else set({ selectedCell: { x, y } });
+  setSelectedCells(cells) {
+    set({ selectedCells: cells });
+  },
+
+  moveSelection(dx, dy) {
+    const { grid, selectedCells } = get();
+    if (selectedCells.length === 0) return;
+    const nextGrid = engineMoveComponents(grid, selectedCells, dx, dy);
+    if (nextGrid === grid) return;
+    const { history, historyIndex } = pushHistory(get, nextGrid);
+    const newPositions = selectedCells.map((c) => ({ x: c.x + dx, y: c.y + dy }));
+    set({ grid: nextGrid, history, historyIndex, selectedCells: newPositions });
+  },
+
+  removeSelection() {
+    const { grid, selectedCells } = get();
+    if (selectedCells.length === 0) return;
+    const nextGrid = engineRemoveComponents(grid, selectedCells);
+    const { history, historyIndex } = pushHistory(get, nextGrid);
+    set({ grid: nextGrid, history, historyIndex, selectedCells: [] });
+  },
+
+  rotateSelection() {
+    const { grid, selectedCells } = get();
+    if (selectedCells.length === 0) return;
+    const nextGrid = engineRotateComponents(grid, selectedCells);
+    const { history, historyIndex } = pushHistory(get, nextGrid);
+    set({ grid: nextGrid, history, historyIndex });
   },
 
   getConnections() {
@@ -128,13 +156,13 @@ export const useGridStore = create<GridStore>((set, get) => ({
   },
 
   loadGrid(grid) {
-    set({ grid, history: [grid], historyIndex: 0, selectedCell: null });
+    set({ grid, history: [grid], historyIndex: 0, selectedCells: [] });
   },
 
   loadFromJson(json) {
     try {
       const grid = importGridFromJson(json);
-      set({ grid, history: [grid], historyIndex: 0, selectedCell: null });
+      set({ grid, history: [grid], historyIndex: 0, selectedCells: [] });
     } catch {
       // ignore invalid json
     }
