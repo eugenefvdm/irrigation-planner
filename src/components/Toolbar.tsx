@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useGridStore } from "@/store/useGridStore";
 import { useThemeStore, type Theme } from "@/store/useThemeStore";
-import { getSeedGrid } from "@/data/seedSystem";
+import { exampleJson } from "@/data/example";
 import { ComponentSymbol } from "./ComponentSymbol";
 
 function useToast() {
@@ -111,7 +111,7 @@ export function Toolbar() {
     "p-1.5 rounded border transition-colors border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 disabled:opacity-50 disabled:pointer-events-none";
 
   const handleLoadExample = () => {
-    useGridStore.getState().loadGrid(getSeedGrid());
+    useGridStore.getState().loadFromJson(exampleJson);
   };
 
   const saveAsFilename = () => {
@@ -183,10 +183,16 @@ export function Toolbar() {
         e.preventDefault();
         saveHandlerRef.current();
       }
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const target = e.target as HTMLElement;
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+        e.preventDefault();
+        removeSelection();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [removeSelection]);
 
   return (
     <>
