@@ -1,18 +1,30 @@
-# AI hints (for future “same question” context)
+# AI hints (for future "same question" context)
 
-## Pipe icon margin / “extend lines closer to the ends”
+## How pipes and junctions are drawn
+
+**Where to look:** **`src/components/ComponentSymbol.tsx`**.
+
+- Each symbol is an SVG `<g>` with optional `transform={rotate(...)}` (0/90/180/270). All coordinates are in **cell-local space** (0 to `S` where `S = CELL_SIZE`, typically 50).
+- **Shared layout:** `margin` controls how far lines and port circles sit from the cell edges. With `margin = 0`, lines run **edge-to-edge** so that connection circles from adjacent cells meet at the same world position (joins look continuous; T-bars and straight couplings are compact).
+- **Pipe segments:** `pipe_straight` draws a horizontal `<line>` and two port `<circle>`s at the ends; `pipe_straight_v` is vertical. Line and circles use the same endpoints (`margin` to `S - margin`; with margin 0 that's 0 to S).
+- **Tees / elbows:** `tee`, `tee_n`, `tee_e`, `tee_w` and `elbow_90*` use `<path>` with `M`/`L`/`H`/`V`. Each has port circles at line ends and at the branch; stem lines go from center (`HALF`) to the relevant edge so the branch port sits on the main run.
+- **Drip emitters:** One vertical line from the emitter circle down to the bottom edge, with a port circle at `(HALF, S - margin)`. **Tap** has a spout and one horizontal line + port to the right.
+- **Port dot radius:** `rSmall = (3 / 50) * S`; color via `PORT_DOT_CLASS` (amber). To make joins closer, reduce or zero `margin`; zero gives overlapping circles at cell boundaries.
+
+## How the grid positions each cell
+
+**Where to look:** **`src/components/GridCanvas.tsx`**.
+
+- The grid is one SVG. Each placed component is a `<g>` with `transform={translate(x*CELL_SIZE, y*CELL_SIZE)}` (see GridCanvas). So cell `(gx, gy)` has its symbol drawn in a box from `(gx*CELL_SIZE, gy*CELL_SIZE)` to `((gx+1)*CELL_SIZE, (gy+1)*CELL_SIZE)`.
+- **Cell size:** **`src/lib/constants.ts`** – `CELL_SIZE = 50`, `GRID_WIDTH`, `GRID_HEIGHT`.
+- **Shared edges:** The right edge of cell (gx, gy) and the left edge of cell (gx+1, gy) both map to the same x in world space (`(gx+1) * CELL_SIZE`). So when symbols use `margin = 0` and draw port circles at 0 and S, the circle at the right edge of one cell and the circle at the left edge of the next cell render at the same pixel (joins overlap as intended).
+
+## Pipe icon margin / "extend lines closer to the ends" (compact joins)
 
 **What was used to answer:**
-- Icons are the **horizontal** and **vertical straight pipe** symbols (brown line + yellow endpoint dots in dark grey rounded cells).
-- They are implemented in **`src/components/ComponentSymbol.tsx`**.
-- The two cases are:
-  - **`pipe_straight`** – horizontal line, dots at left/right.
-  - **`pipe_straight_v`** – vertical line, dots at top/bottom.
-- A single **`margin`** value controls inset from the cell edges for both:
-  - Defined near the top of the component: `const margin = (4 / 50) * S;` (was `(8 / 50) * S`).
-  - Used for line endpoints and port-dot positions (`x1`, `x2`, `y1`, `y2`, and `circle` cx/cy).
-- **To extend lines closer to the ends (less margin):** decrease the margin fraction, e.g. `(4/50)*S` or `(2/50)*S`. Don’t go so small that port dots (radius `rSmall = (3/50)*S`) are clipped by the cell.
-- Port dot radius: `rSmall = (3 / 50) * S`; class for dot color: `PORT_DOT_CLASS` (amber).
+- Icons are implemented in **`src/components/ComponentSymbol.tsx`** (see **How pipes and junctions are drawn** above).
+- A single **`margin`** at the top of the component controls inset from the cell edges for line endpoints and port-dot positions. **Current value:** `margin = 0` so lines run edge-to-edge and connection circles overlap at T-bars and straight couplings.
+- **To make joins less compact again:** set e.g. `const margin = (4 / 50) * S;`. Port dot radius: `rSmall = (3 / 50) * S`; class: `PORT_DOT_CLASS` (amber).
 
 ## Load and Save (MVP)
 
@@ -49,4 +61,4 @@
 
 **What was used to answer:**
 - Tooltips for placed components live in **`src/components/GridCanvas.tsx`**.
-- Native SVG `<title>` as first child of each component’s `<g>`: `<title>{component.name}</title>`. Browser shows tooltip on hover; delay is browser-controlled (~1–2s).
+- Native SVG `<title>` as first child of each component's `<g>`: `<title>{component.name}</title>`. Browser shows tooltip on hover; delay is browser-controlled (~1–2s).

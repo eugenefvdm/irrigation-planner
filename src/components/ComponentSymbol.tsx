@@ -19,7 +19,7 @@ export function ComponentSymbol({ component, rotation = 0, selected, size = CELL
   const transform = `rotate(${rotation} ${HALF} ${HALF})`;
   const stroke = selected ? "rgb(245 158 11)" : "rgb(180 83 9)";
   const strokeWidth = selected ? 2.5 : 1.5;
-  const margin = (4 / 50) * S;
+  const margin = 0;
   const rSmall = (3 / 50) * S;
 
   switch (component.id) {
