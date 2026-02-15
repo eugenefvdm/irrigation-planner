@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useGridStore } from "@/store/useGridStore";
 import { getSeedGrid } from "@/data/seedSystem";
 import { ComponentSymbol } from "./ComponentSymbol";
@@ -82,13 +82,23 @@ export function Toolbar() {
     useGridStore.getState().loadGrid(getSeedGrid());
   };
 
-  const handleExport = () => {
+  const saveAsFilename = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const h = String(now.getHours()).padStart(2, "0");
+    const min = String(now.getMinutes()).padStart(2, "0");
+    return `irrigation-plan-${y}-${m}-${d}-${h}-${min}.json`;
+  };
+
+  const handleSaveAs = () => {
     const json = exportJson();
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "irrigation-plan.json";
+    a.download = saveAsFilename();
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -108,6 +118,42 @@ export function Toolbar() {
       toast.show("Loaded");
     }
   };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    file.text().then(
+      (text) => {
+        try {
+          loadFromJson(text);
+          toast.show("Loaded from file");
+        } catch {
+          toast.show("Invalid file");
+        }
+      },
+      () => toast.show("Invalid file")
+    );
+  };
+
+  const saveHandlerRef = useRef(handleSave);
+  saveHandlerRef.current = handleSave;
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveHandlerRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <>
@@ -178,12 +224,26 @@ export function Toolbar() {
         </>
       )}
       <span className="flex-1" />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json,application/json"
+        className="hidden"
+        onChange={handleImportFile}
+      />
       <button
         type="button"
         onClick={handleSave}
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Save
+      </button>
+      <button
+        type="button"
+        onClick={handleSaveAs}
+        className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+      >
+        Save As
       </button>
       <button
         type="button"
@@ -194,17 +254,17 @@ export function Toolbar() {
       </button>
       <button
         type="button"
+        onClick={handleImportClick}
+        className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+      >
+        Import
+      </button>
+      <button
+        type="button"
         onClick={handleLoadExample}
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Load example
-      </button>
-      <button
-        type="button"
-        onClick={handleExport}
-        className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
-      >
-        Export JSON
       </button>
     </div>
     </>
