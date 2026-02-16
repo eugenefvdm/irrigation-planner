@@ -5,6 +5,7 @@ import { useGridStore } from "@/store/useGridStore";
 import { useThemeStore, type Theme } from "@/store/useThemeStore";
 import { exampleJson } from "@/data/example";
 import { GRID_HEIGHT, GRID_WIDTH } from "@/lib/constants";
+import { exportGridToJson } from "@/lib/export";
 import { ComponentSymbol } from "./ComponentSymbol";
 
 function useToast() {
@@ -131,6 +132,19 @@ export function Toolbar() {
 
   const btnClass =
     "p-1.5 rounded border transition-colors border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 disabled:opacity-50 disabled:pointer-events-none";
+
+  const handleNew = () => {
+    if (checkDirty()) {
+      const discard = window.confirm(
+        "You have unsaved changes. Discard and start a new diagram?"
+      );
+      if (!discard) return;
+    }
+    const emptyJson = exportGridToJson({}, { name: "Untitled" });
+    useGridStore.getState().loadFromJson(emptyJson);
+    lastSavedSnapshotRef.current = emptyJson;
+    toast.show("New diagram");
+  };
 
   const handleLoadExample = () => {
     if (checkDirty()) {
@@ -315,11 +329,12 @@ export function Toolbar() {
       </div>
       <span className="w-px h-6 bg-stone-300 dark:bg-stone-600" />
       <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Place:</span>
-      {catalog.map((c) => (
+      {catalog.map((c, index) => (
         <button
           key={c.id}
           type="button"
           title={c.name}
+          data-tour={index === 0 ? "place-pipe" : undefined}
           onClick={() => setSelectedCatalog(selectedCatalogId === c.id ? null : c.id)}
           className={`p-1.5 rounded border transition-colors ${
             selectedCatalogId === c.id
@@ -386,26 +401,6 @@ export function Toolbar() {
         </>
       )}
       <span className="flex-1" />
-      <div className="relative flex items-center justify-center rounded border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 w-9 h-9">
-        <span className="pointer-events-none text-stone-500 dark:text-stone-400" aria-hidden>
-          {theme === "light" && <SunIcon className="size-5" />}
-          {theme === "dark" && <MoonIcon className="size-5" />}
-          {theme === "system" && <ComputerIcon className="size-5" />}
-        </span>
-        <select
-          value={theme}
-          onChange={(e) => setTheme(e.target.value as Theme)}
-          className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-          title="Theme: Light, Dark, or System"
-          aria-label="Theme"
-        >
-          {THEME_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
       <input
         ref={fileInputRef}
         type="file"
@@ -415,9 +410,18 @@ export function Toolbar() {
       />
       <button
         type="button"
+        onClick={handleNew}
+        title="Start a new diagram"
+        className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+      >
+        New
+      </button>
+      <button
+        type="button"
         onClick={handleSave}
         title="Save (download JSON file) (Ctrl+S)"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+        data-tour="save"
       >
         Save
       </button>
@@ -442,9 +446,38 @@ export function Toolbar() {
         onClick={handleLoadExample}
         title="Load example irrigation plan"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+        data-tour="load-example"
       >
         Load example
       </button>
+      <button
+        type="button"
+        onClick={() => import("@/lib/tour").then((m) => m.startTour())}
+        title="Show guided tour"
+        className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
+      >
+        Help
+      </button>
+      <div className="relative flex items-center justify-center rounded border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 w-9 h-9">
+        <span className="pointer-events-none text-stone-500 dark:text-stone-400" aria-hidden>
+          {theme === "light" && <SunIcon className="size-5" />}
+          {theme === "dark" && <MoonIcon className="size-5" />}
+          {theme === "system" && <ComputerIcon className="size-5" />}
+        </span>
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value as Theme)}
+          className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+          title="Theme: Light, Dark, or System"
+          aria-label="Theme"
+        >
+          {THEME_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
     </>
   );

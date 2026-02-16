@@ -2,3 +2,45 @@
 
 /* Class-based dark mode so the theme switch controls appearance */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Driver.js tour: dark mode for popovers (overlay opacity set in tour config) */
+.dark .driver-popover.driver-popover-irrigation,
+.dark .driver-popover-irrigation {
+  background-color: rgb(41 37 36);
+  color: rgb(231 229 228);
+  box-shadow: 0 1px 10px rgba(0 0 0 / 0.5);
+}
+
+.dark .driver-popover-irrigation .driver-popover-title,
+.dark .driver-popover-irrigation .driver-popover-description {
+  color: rgb(231 229 228);
+}
+
+.dark .driver-popover-irrigation .driver-popover-close-btn {
+  color: rgb(163 163 163);
+}
+
+.dark .driver-popover-irrigation .driver-popover-close-btn:hover,
+.dark .driver-popover-irrigation .driver-popover-close-btn:focus {
+  color: rgb(231 229 228);
+}
+
+.dark .driver-popover-irrigation .driver-popover-progress-text {
+  color: rgb(163 163 163);
+}
+
+.dark .driver-popover-irrigation .driver-popover-footer button {
+  background-color: rgb(68 64 60);
+  color: rgb(231 229 228);
+  border-color: rgb(120 113 108);
+  text-shadow: none;
+}
+
+.dark .driver-popover-irrigation .driver-popover-footer button:hover,
+.dark .driver-popover-irrigation .driver-popover-footer button:focus {
+  background-color: rgb(87 83 78);
+}
+
+.dark .driver-popover-irrigation .driver-popover-arrow {
+  border-color: rgb(41 37 36);
+}

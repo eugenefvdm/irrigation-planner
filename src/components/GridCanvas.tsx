@@ -177,6 +177,7 @@ export function GridCanvas() {
           <g
             key={key}
             transform={`translate(${x * CELL_SIZE}, ${y * CELL_SIZE})`}
+            data-tour={placed.componentId === "tap" ? "example-tap" : undefined}
             onMouseDown={() => {
               if (selected && selectedCells.length > 0) setDragMove({ start: { gx: x, gy: y } });
             }}

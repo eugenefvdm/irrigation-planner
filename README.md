@@ -1,3 +1,15 @@
+# Irrigation Builder
+
+## Getting started
+
+1. Open the app and (optionally) click **Help** in the toolbar for a short guided tour.
+2. Click **Load example** to load a sample irrigation plan.
+3. In the diagram you’ll see the **tap** and the rest of the example layout.
+4. **Place piping** by choosing an icon in the task bar, then clicking on the grid.
+5. Use **Save** to download your diagram as a JSON file.
+
+---
+
 # AI hints (for future "same question" context)
 
 ## How pipes and junctions are drawn
