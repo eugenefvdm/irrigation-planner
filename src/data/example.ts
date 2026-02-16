@@ -6,5 +6,5 @@ import exampleData from "./example.json";
 export const exampleJson = JSON.stringify(exampleData);
 
 export function getExampleGrid(): GridState {
-  return importGridFromJson(exampleJson);
+  return importGridFromJson(exampleJson).grid;
 }

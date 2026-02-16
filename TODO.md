@@ -1,3 +1,7 @@
+- Start with 100% again!
+- A legend that counts all items on the map
+- Irrigation computer with two line output, e.g. every 2nd day / 8 minutes
 - Build landing page with a screenshot of our area
-- Examine Export JSON
-- Improved Load / Save
+- The software has the word Irrigation Builder but it's rather Irrigation Planner
+- F11 for full screen mode (for printing)
+- A help modal

@@ -29,9 +29,9 @@
 ## Load and Save (MVP)
 
 **What was used to answer:**
-- **Save**: Persists current diagram to `localStorage` under key `"irrigation-diagram"`. Uses `useGridStore().exportJson()` from `src/store/useGridStore.ts`, which calls `exportGridToJson` from `src/lib/export.ts`. No filenames; single saved state per origin.
-- **Load**: Reads from `localStorage.getItem("irrigation-diagram")` and calls `loadFromJson(json)` on the store. Store uses `importGridFromJson` from `src/lib/export.ts`. Replaces current grid and resets history.
-- Buttons are in **`src/components/Toolbar.tsx`** (`handleSave`, `handleLoad`). Styling matches other toolbar buttons (stone borders, dark mode support).
+- **Save**: Downloads the current diagram as a JSON file. If the document name is "Untitled", prompts for a name and uses it (sanitized) as the filename; otherwise uses the current document name. Uses `useGridStore().exportJson()` from `src/store/useGridStore.ts`, which calls `exportGridToJson` from `src/lib/export.ts`. Ctrl+S triggers Save.
+- **Load**: Opens a file picker; the selected JSON file is read and loaded via `loadFromJson` on the store. Store uses `importGridFromJson` from `src/lib/export.ts`. Replaces current grid and resets history. If there are unsaved changes, user is asked to confirm before loading.
+- Buttons are in **`src/components/Toolbar.tsx`** (`handleSave`, `handleLoadClick` / `handleLoadFile`). Styling matches other toolbar buttons (stone borders, dark mode support).
 
 ## Click cell to select object (not only on the object)
 

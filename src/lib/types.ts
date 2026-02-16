@@ -48,4 +48,6 @@ export interface ExportData {
   gridWidth: number;
   gridHeight: number;
   placed: PlacedComponent[];
+  zoom?: number;
+  name?: string;
 }

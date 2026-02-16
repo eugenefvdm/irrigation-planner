@@ -22,11 +22,14 @@ const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2;
 const ZOOM_STEP = 0.25;
 
+const DEFAULT_DOCUMENT_NAME = "Untitled";
+
 interface GridStore {
   grid: GridState;
   history: GridState[];
   historyIndex: number;
   zoom: number;
+  documentName: string;
   selectedCatalogId: string | null;
   selectedCells: SelectionCell[];
   place: (componentId: string, x: number, y: number, rotation?: Rotation, text?: string) => void;
@@ -46,6 +49,7 @@ interface GridStore {
   loadGrid: (grid: GridState) => void;
   loadFromJson: (json: string) => void;
   exportJson: () => string;
+  setDocumentName: (name: string) => void;
   catalog: typeof COMPONENT_CATALOG;
 }
 
@@ -65,7 +69,8 @@ export const useGridStore = create<GridStore>((set, get) => ({
   grid: {},
   history: [{}],
   historyIndex: 0,
-  zoom: 0.75,
+  zoom: 1,
+  documentName: DEFAULT_DOCUMENT_NAME,
   selectedCatalogId: null,
   selectedCells: [],
   catalog: COMPONENT_CATALOG,
@@ -161,14 +166,26 @@ export const useGridStore = create<GridStore>((set, get) => ({
 
   loadFromJson(json) {
     try {
-      const grid = importGridFromJson(json);
-      set({ grid, history: [grid], historyIndex: 0, selectedCells: [] });
+      const { grid, zoom, name } = importGridFromJson(json);
+      set({
+        grid,
+        history: [grid],
+        historyIndex: 0,
+        selectedCells: [],
+        ...(zoom != null && { zoom }),
+        documentName: name ?? DEFAULT_DOCUMENT_NAME,
+      });
     } catch {
       // ignore invalid json
     }
   },
 
   exportJson() {
-    return exportGridToJson(get().grid);
+    const { grid, zoom, documentName } = get();
+    return exportGridToJson(grid, { zoom, name: documentName });
+  },
+
+  setDocumentName(name) {
+    set({ documentName: name.trim() || DEFAULT_DOCUMENT_NAME });
   },
 }));

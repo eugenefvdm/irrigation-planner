@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useGridStore } from "@/store/useGridStore";
 import { useThemeStore, type Theme } from "@/store/useThemeStore";
 import { exampleJson } from "@/data/example";
+import { GRID_HEIGHT, GRID_WIDTH } from "@/lib/constants";
 import { ComponentSymbol } from "./ComponentSymbol";
 
 function useToast() {
@@ -105,13 +106,41 @@ export function Toolbar() {
   const redo = useGridStore((s) => s.redo);
   const history = useGridStore((s) => s.history);
   const historyIndex = useGridStore((s) => s.historyIndex);
+  const grid = useGridStore((s) => s.grid);
+  const documentName = useGridStore((s) => s.documentName);
+  const setDocumentName = useGridStore((s) => s.setDocumentName);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(documentName);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (editingName) {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }
+  }, [editingName]);
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+  const lastSavedSnapshotRef = useRef<string | null>(null);
+
+  function checkDirty(): boolean {
+    if (lastSavedSnapshotRef.current === null) {
+      return Object.keys(grid).length > 0;
+    }
+    return exportJson() !== lastSavedSnapshotRef.current;
+  }
+
   const btnClass =
     "p-1.5 rounded border transition-colors border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 disabled:opacity-50 disabled:pointer-events-none";
 
   const handleLoadExample = () => {
+    if (checkDirty()) {
+      const discard = window.confirm(
+        "You have unsaved changes. Discard and load example anyway?"
+      );
+      if (!discard) return;
+    }
     useGridStore.getState().loadFromJson(exampleJson);
+    lastSavedSnapshotRef.current = exportJson();
   };
 
   const saveAsFilename = () => {
@@ -124,49 +153,67 @@ export function Toolbar() {
     return `irrigation-plan-${y}-${m}-${d}-${h}-${min}.json`;
   };
 
-  const handleSaveAs = () => {
-    const json = exportJson();
+  function downloadAsFile(json: string, filename: string) {
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = saveAsFilename();
+    a.download = filename.endsWith(".json") ? filename : `${filename}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };
+  }
 
-  const STORAGE_KEY = "irrigation-diagram";
+  const handleSaveAs = () => {
+    const json = exportJson();
+    downloadAsFile(json, saveAsFilename());
+  };
 
   const handleSave = () => {
-    const json = exportJson();
-    localStorage.setItem(STORAGE_KEY, json);
-    toast.show("Saved");
-  };
-
-  const handleLoad = () => {
-    const json = localStorage.getItem(STORAGE_KEY);
-    if (json) {
-      loadFromJson(json);
-      toast.show("Loaded");
+    if (documentName === "Untitled") {
+      const name = window.prompt("Enter a name for this diagram (file will be downloaded):");
+      if (name == null) return;
+      const trimmed = name.trim();
+      const fileStem = trimmed
+        ? trimmed.replace(/[^\w\s-]/g, "").replace(/\s+/g, "-")
+        : saveAsFilename().replace(/\.json$/i, "");
+      const displayName = trimmed || fileStem;
+      setDocumentName(displayName);
+      const json = exportJson();
+      downloadAsFile(json, fileStem);
+      lastSavedSnapshotRef.current = json;
+      toast.show("Saved");
+      return;
     }
+    const json = exportJson();
+    const fileStem = documentName.replace(/[^\w\s-]/g, "").replace(/\s+/g, "-") || saveAsFilename().replace(/\.json$/i, "");
+    downloadAsFile(json, fileStem);
+    lastSavedSnapshotRef.current = json;
+    toast.show("Saved");
   };
 
   const loadFromJson = useGridStore((s) => s.loadFromJson);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImportClick = () => {
+  const handleLoadClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLoadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     file.text().then(
       (text) => {
+        if (checkDirty()) {
+          const discard = window.confirm(
+            "You have unsaved changes. Discard and load from file anyway?"
+          );
+          if (!discard) return;
+        }
         try {
           loadFromJson(text);
-          toast.show("Loaded from file");
+          lastSavedSnapshotRef.current = exportJson();
+          toast.show("Loaded");
         } catch {
           toast.show("Invalid file");
         }
@@ -205,6 +252,48 @@ export function Toolbar() {
         </div>
       )}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700">
+      {editingName ? (
+        <input
+          ref={nameInputRef}
+          type="text"
+          value={nameInput}
+          onChange={(e) => setNameInput(e.target.value)}
+          onBlur={() => {
+            setDocumentName(nameInput);
+            setEditingName(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setDocumentName(nameInput);
+              setEditingName(false);
+              nameInputRef.current?.blur();
+            }
+            if (e.key === "Escape") {
+              setNameInput(documentName);
+              setEditingName(false);
+              nameInputRef.current?.blur();
+            }
+          }}
+          className="text-sm font-medium text-stone-600 dark:text-stone-400 bg-stone-100 dark:bg-stone-700 border border-stone-300 dark:border-stone-600 rounded px-1.5 py-0.5 min-w-[6rem] max-w-[12rem] focus:outline-none focus:ring-1 focus:ring-amber-500 dark:focus:ring-amber-400"
+          aria-label="Document name"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setNameInput(documentName);
+            setEditingName(true);
+          }}
+          className="text-sm font-medium text-stone-600 dark:text-stone-400 truncate max-w-[12rem] text-left hover:text-stone-800 dark:hover:text-stone-200 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:focus:ring-amber-400 rounded px-0.5 -mx-0.5"
+          title={`${documentName} (click to rename)`}
+        >
+          {documentName}
+        </button>
+      )}
+      <span className="text-sm text-stone-500 dark:text-stone-500" title="Grid size">
+        {GRID_WIDTH}×{GRID_HEIGHT}
+      </span>
+      <span className="w-px h-6 bg-stone-300 dark:bg-stone-600" />
       <div className="flex items-center gap-1">
         <button type="button" title="Zoom out" onClick={zoomOut} className={btnClass}>
           <ZoomOutIcon className="size-5" />
@@ -322,12 +411,12 @@ export function Toolbar() {
         type="file"
         accept=".json,application/json"
         className="hidden"
-        onChange={handleImportFile}
+        onChange={handleLoadFile}
       />
       <button
         type="button"
         onClick={handleSave}
-        title="Save to browser storage (Ctrl+S)"
+        title="Save (download JSON file) (Ctrl+S)"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Save
@@ -342,19 +431,11 @@ export function Toolbar() {
       </button>
       <button
         type="button"
-        onClick={handleLoad}
-        title="Load from browser storage"
+        onClick={handleLoadClick}
+        title="Load plan from file"
         className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
       >
         Load
-      </button>
-      <button
-        type="button"
-        onClick={handleImportClick}
-        title="Load plan from JSON file"
-        className="px-3 py-1.5 rounded text-sm border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300"
-      >
-        Import
       </button>
       <button
         type="button"
